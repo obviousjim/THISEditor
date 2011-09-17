@@ -23,7 +23,7 @@ THISSequence::THISSequence()
 	drawRange = ofRange(0.0, 1.0);
 	loaded = false;
 	widthSet = false;
-	imageType = OF_IMAGE_COLOR;
+	imageType = OF_IMAGE_UNDEFINED;
 	drawWidth = -1;
 	//TODO: set through interface
 	widthPerFrame = 75;
@@ -61,7 +61,14 @@ void THISSequence::loadSequence(string directoryName)
     if(!ofDirectory::doesDirectoryExist(directory+"/thumbs/")){
         ofDirectory::createDirectory(directory+"/thumbs/");
     }
-
+	
+	if(imageType == OF_IMAGE_UNDEFINED){
+		//sniff the first file
+		ofImage testImage;
+		testImage.loadImage(list.getPath(0));
+		imageType = testImage.getPixelsRef().getImageType();
+	}
+	
 	for(int i = 0; i < numFiles; i++){
 		string frameFileName =  list.getPath(i);
 		THISFrame* frame = new THISFrame();

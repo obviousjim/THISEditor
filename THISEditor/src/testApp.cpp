@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void testApp::setup(){
 
-//	ofEnableAlphaBlending();
+	ofEnableAlphaBlending();
 
 	timeline = new THISTimeline();
 	timeline->setup();
@@ -27,9 +27,9 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     ofBackground(20,20,20);
-
+	ofEnableAlphaBlending();
+	
     if(timeline->allSequencesLoaded()){
-
 
         ofTexture* sourceAStart = timeline->getCurrentPreviewStartSourceAFrame();
         ofTexture* sourceAEnd = timeline->getCurrentPreviewEndSourceAFrame();

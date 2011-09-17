@@ -23,7 +23,7 @@ ofImage* THISOutputTimeline::renderOutputFrame(bool thumb)
     }
 	
 	if(outputPreviewImage == NULL){
-		ofImageType type = (ofImageType)inputTimeline->sourceA->getFrame(0, true)->type;
+		ofImageType type = (ofImageType)inputTimeline->sourceA->getFrame(0, true)->getPixelsRef().getImageType();
 		outputPreviewImage = new ofImage();
 		outputPreviewImage->setUseTexture(false);
 		outputPreviewImage->allocate(inputTimeline->sourceA->getImageWidth(), inputTimeline->sourceA->getImageHeight(), type);
@@ -98,6 +98,6 @@ ofImage* THISOutputTimeline::renderOutputFrame(bool thumb)
 		}
 	}
 	
-	outputDestination->setFromPixels(writebuffer, imagewidth, imageheight, (ofImageType)outputDestination->type);
+	outputDestination->setFromPixels(writebuffer, imagewidth, imageheight, outputDestination->getPixelsRef().getImageType());
 	return outputDestination;
 }

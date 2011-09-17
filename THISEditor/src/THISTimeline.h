@@ -39,6 +39,8 @@ class THISTimeline : public ofxMSAInteractiveObjectDelegate
 
 	void setup();
 	bool loadComposition(string compFolder);
+	bool loadComposition(ofxXmlSettings compSettings);
+	void setWorkingFolder(string folder);
 
 	void draw();
 
@@ -98,11 +100,11 @@ class THISTimeline : public ofxMSAInteractiveObjectDelegate
 
     unsigned char* distortionPreviewPixelsChar;
 
+	ofxMSAInteractiveObjectWithDelegate* newCompButton;
 	ofxMSAInteractiveObjectWithDelegate* loadCompButton;
-	ofxMSAInteractiveObjectWithDelegate* loadSourceAButton;
-	ofxMSAInteractiveObjectWithDelegate* loadSourceBButton;
-	ofxMSAInteractiveObjectWithDelegate* loadDistortionButton;
-	ofxMSAInteractiveObjectWithDelegate* setOutputDirectoryButton;
+	ofxMSAInteractiveObjectWithDelegate* saveCompAsButton;
+	
+	ofxMSAInteractiveObjectWithDelegate* generateAllThumbnails;	
 	ofxMSAInteractiveObjectWithDelegate* playheadBar;
 
 	ofxMSAInteractiveObjectWithDelegate* exportCurrentViewButton;
@@ -139,7 +141,6 @@ class THISTimeline : public ofxMSAInteractiveObjectDelegate
 	THISExporter* exporter;
 	void exportEntireSequence();
 	void exportCurrentView();
-
 
   private:
 	bool isPlayingBack;

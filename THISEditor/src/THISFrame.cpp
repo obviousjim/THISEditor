@@ -124,15 +124,20 @@ bool THISFrame::loadFrame()
         thumbHeight = frame->getHeight() / scaleFactor;
         thumbnail->resize(thumbWidth, thumbHeight);
         thumbnail->saveImage(thumbFilename);
-        if(type != OF_IMAGE_UNDEFINED && (ofImageType)thumbnail->type != type){
+        if(type != OF_IMAGE_UNDEFINED && thumbnail->getPixelsRef().getImageType() != type){
+			cout << "WARNING CHANGING THUMB TYPE FROM " << thumbnail->getPixelsRef().getImageType() << " to " << type << endl;
             thumbnail->setImageType(type);
         }
         thumbLoaded = true;
     }
-
-	if(type != OF_IMAGE_UNDEFINED && (ofImageType)frame->type != type){
+	
+		
+	if(type != OF_IMAGE_UNDEFINED && frame->getPixelsRef().getImageType() != type){
+		cout << "WARNING CHANGING FRAME TYPE FROM " << thumbnail->getPixelsRef().getImageType() << " to " << type << endl;
 		frame->setImageType(type);
 	}
+
+	cout << "file name is " << filename << " frame type is " << frame->getPixelsRef().getImageType() << endl;
 
 	frameWidth = frame->getWidth();
 	frameHeight = frame->getHeight();
@@ -145,6 +150,7 @@ void THISFrame::setDesiredThumbnailWidth(int width)
 {
 	desiredThumbWidth = width;
 }
+
 
 bool THISFrame::loadThumb()
 {
@@ -173,15 +179,18 @@ bool THISFrame::loadThumb()
         return loadFrame();
     }
 
-    if((ofImageType)thumbnail->type != type){
-        thumbnail->setImageType( type );
+	if(type != OF_IMAGE_UNDEFINED && thumbnail->getPixelsRef().getImageType() != type){
+		cout << "WARNING CHANGING THUMB TYPE" << endl;
+		thumbnail->setImageType( type );
     }
+	
     thumbWidth = thumbnail->getWidth();
     thumbHeight = thumbnail->getHeight();
 
     thumbLoaded = true;
 	return true;
 }
+
 
 /*
 bool THISFrame::generateThumbnail()

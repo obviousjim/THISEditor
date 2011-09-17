@@ -77,16 +77,17 @@ void THISTimeline::setup()
 	exporter->inputTimeline = this;
 	exporter->outputTimeline = output;
 
+	newCompButton = new ofxMSAInteractiveObjectWithDelegate();
+	newCompButton->setup();
+	newCompButton->setDelegate(this);
+	newCompButton->disableAppEvents();
+
 	loadCompButton = new ofxMSAInteractiveObjectWithDelegate();
 	loadCompButton->setup();
 	loadCompButton->setDelegate(this);
 	loadCompButton->disableAppEvents();
 
-	loadSourceAButton = new ofxMSAInteractiveObjectWithDelegate();
-	loadSourceAButton->setup();
-	loadSourceAButton->setDelegate(this);
-	loadSourceAButton->disableAppEvents();
-
+	/*
 	loadSourceBButton = new ofxMSAInteractiveObjectWithDelegate();
 	loadSourceBButton->setup();
 	loadSourceBButton->setDelegate(this);
@@ -101,7 +102,8 @@ void THISTimeline::setup()
 	setOutputDirectoryButton->setup();
 	setOutputDirectoryButton->setDelegate(this);
 	setOutputDirectoryButton->disableAppEvents();
-
+	 */
+	
 	playheadBar = new ofxMSAInteractiveObjectWithDelegate();
     playheadBar->setup();
     playheadBar->setDelegate(this);
@@ -150,78 +152,89 @@ bool THISTimeline::loadComposition(string compFolder)
 		return false;
 	}
 
-	currentCompFolder = compFolder;
+	setWorkingFolder(compFolder);
+	
+    if(settings.loadFile(settingsFileName)){
+		loadComposition(settings);
+    }
+	else{
+		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Failed to load settings file '" + settingsFileName + "'.");
+		exporter->pathPrefix = compFolder;
+		return false;
+	}
+	return true;
+}
 
+void THISTimeline::setWorkingFolder(string compFolder)
+{
+	currentCompFolder = compFolder;
+	
 	ofEnableDataPath();
 	defaults.setValue("defaults:comp", compFolder);
 	defaults.saveFile("defaults.xml");
 	ofDisableDataPath();
-
+	
 	maxwidthkeys->setXMLFileName(compFolder+"/max_width_keys.xml");
 	maxwidthkeys->clear();
 	maxwidthkeys->loadFromXML();
-
+	
 	minwidthkeys->setXMLFileName(compFolder+"/min_width_keys.xml");
 	minwidthkeys->loadFromXML();
-
+	
 	sourcekeys->setXMLFileName(compFolder+"/source_keys.xml");
 	sourcekeys->loadFromXML();
-
+	
 	blendkeys->setXMLFileName(compFolder+"/blend_keys.xml");
 	blendkeys->loadFromXML();
-
+	
 	zoomer->setXmlFileName(compFolder+"/zoom_window.xml");
 	zoomer->loadFromXML();
+	
+	settingsFileName = compFolder+"/sequence_settings.xml";	
+}
 
-	settingsFileName = compFolder+"/sequence_settings.xml";
-
-    if(settings.loadFile(settingsFileName)){
-        string sourceSequenceADirectory = settings.getValue("settings:source_directory_a", "");
-		string sourceSequenceBDirectory = settings.getValue("settings:source_directory_b", "");
-        string disortionSequenceDirectory = settings.getValue("settings:distortion_directory", "");
-		string outputSequenceDirectory = settings.getValue("settings:output_directory", "");
-        if(sourceSequenceADirectory != "" && ofDirectory::doesDirectoryExist(sourceSequenceADirectory)){
-        	sourceA->loadSequence(sourceSequenceADirectory);
-        }
-		else {
-			ofLog(OF_LOG_ERROR, "THISTimeline -- LOAD COMP -- Sequence A failed to load from directory " + sourceSequenceADirectory);
-//			return false;
-		}
-
-        if(sourceSequenceBDirectory != "" && ofDirectory::doesDirectoryExist(sourceSequenceBDirectory)){
-        	sourceB->loadSequence(sourceSequenceBDirectory);
-        }
-		else{
-			ofLog(OF_LOG_ERROR, "THISTimeline -- LOAD COMP -- Sequence B failed to load from directory: " + sourceSequenceBDirectory);
-//			return false;
-		}
-
-        if(disortionSequenceDirectory != "" && ofDirectory::doesDirectoryExist(disortionSequenceDirectory)){
-        	distortion->loadSequence(disortionSequenceDirectory);
-			clearDistortionCaches();
-			createDistortionCaches();
-		}
-		else{
-			ofLog(OF_LOG_ERROR, "THISTimeline -- LOAD COMP -- Distortion Sequence failed to load from directory: " + disortionSequenceDirectory);
-//			return false;
-		}
-
-		if(outputSequenceDirectory != "" && ofDirectory::doesDirectoryExist(outputSequenceDirectory)){
-			exporter->pathPrefix = outputSequenceDirectory;
-		}
-		else {
-			ofLog(OF_LOG_ERROR, "THISTimeline -- LOAD COMP -- Output directory '" + outputSequenceDirectory + "' not found. defaulting to " + compFolder);
-			exporter->pathPrefix = compFolder;
-//			return false;
-		}
-
-        playheadPosition = settings.getValue("settings:playhead", 0.0);
-    }
-	else{
-		ofLog(OF_LOG_ERROR, "THISTimeline -- LOAD COMP -- Failed to load settings file '" + settingsFileName + "'.");
-		exporter->pathPrefix = compFolder;
-		return false;
+bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
+{
+	settings = compSettings;
+	
+	string sourceSequenceADirectory = settings.getValue("settings:source_directory_a", "");
+	string sourceSequenceBDirectory = settings.getValue("settings:source_directory_b", "");
+	string disortionSequenceDirectory = settings.getValue("settings:distortion_directory", "");
+	string outputSequenceDirectory = settings.getValue("settings:output_directory", "");
+	if(sourceSequenceADirectory != "" && ofDirectory::doesDirectoryExist(sourceSequenceADirectory)){
+		sourceA->loadSequence(sourceSequenceADirectory);
 	}
+	else {
+		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Sequence A failed to load from directory " + sourceSequenceADirectory);
+		//			return false;
+	}
+	
+	if(sourceSequenceBDirectory != "" && ofDirectory::doesDirectoryExist(sourceSequenceBDirectory)){
+		sourceB->loadSequence(sourceSequenceBDirectory);
+	}
+	else{
+		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Sequence B failed to load from directory: " + sourceSequenceBDirectory);
+		//			return false;
+	}
+	
+	if(disortionSequenceDirectory != "" && ofDirectory::doesDirectoryExist(disortionSequenceDirectory)){
+		distortion->loadSequence(disortionSequenceDirectory);
+		clearDistortionCaches();
+		createDistortionCaches();
+	}
+	else{
+		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Distortion Sequence failed to load from directory: " + disortionSequenceDirectory);
+		//			return false;
+	}
+	
+	if(outputSequenceDirectory != "" && ofDirectory::doesDirectoryExist(outputSequenceDirectory)){
+		exporter->pathPrefix = outputSequenceDirectory;
+	}
+	else {
+		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Output directory '" + outputSequenceDirectory + "' not found");
+	}
+	
+	playheadPosition = settings.getValue("settings:playhead", 0.0);
 	return true;
 }
 
@@ -268,20 +281,20 @@ void THISTimeline::draw()
 	//-------- POSITION ALL ELEMENTS
 
 	//-------- COMP ELEMENTS
-	loadCompButton->setPos(uiposition.x, uiposition.y);
-	loadCompButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
+	newCompButton->setPos(uiposition.x, uiposition.y);
+	newCompButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
 
-	loadSourceAButton->setPos(uiposition.x, uiposition.y+BIG_BUTTON_HEIGHT+ELEMENT_SPACER);
-    loadSourceAButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
+	loadCompButton->setPos(uiposition.x, uiposition.y+BIG_BUTTON_HEIGHT+ELEMENT_SPACER);
+    loadCompButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
 
-	loadSourceBButton->setPos(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*2);
-    loadSourceBButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
-
-	loadDistortionButton->setPos(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*3);
-    loadDistortionButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
-
-	setOutputDirectoryButton->setPos(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*4);
-    setOutputDirectoryButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
+//	loadSourceBButton->setPos(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*2);
+//    loadSourceBButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
+//
+//	loadDistortionButton->setPos(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*3);
+//    loadDistortionButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
+//
+//	setOutputDirectoryButton->setPos(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*4);
+//    setOutputDirectoryButton->setSize(BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT);
 
 
 	//------------- EXPORT BUTTONS
@@ -332,20 +345,21 @@ void THISTimeline::draw()
 	//draw UI elements
 	ofNoFill();
 	ofSetColor(80, 80, 80);
+	
+	ofRect(newCompButton->x,newCompButton->y, newCompButton->width, newCompButton->height);
+	ofDrawBitmapString("new comp\n" + currentCompFolder, newCompButton->x + 10, newCompButton->y + 15);
+
 	ofRect(loadCompButton->x,loadCompButton->y, loadCompButton->width,loadCompButton->height);
-	ofDrawBitmapString("load comp\n" + currentCompFolder, loadCompButton->x + 10, loadCompButton->y + 15);
+	ofDrawBitmapString("load comp\n" + sourceA->directory, loadCompButton->x + 10, loadCompButton->y + 15);
 
-	ofRect(loadSourceAButton->x,loadSourceAButton->y, loadSourceAButton->width,loadSourceAButton->height);
-	ofDrawBitmapString("load source a\n" + sourceA->directory, loadSourceAButton->x + 10, loadSourceAButton->y + 15);
-
-	ofRect(loadSourceBButton->x,loadSourceBButton->y, loadSourceBButton->width,loadSourceBButton->height);
-	ofDrawBitmapString("load source b\n" + sourceB->directory, loadSourceBButton->x + 10, loadSourceBButton->y + 15);
-
-	ofRect(loadDistortionButton->x,loadDistortionButton->y, loadDistortionButton->width,loadDistortionButton->height);
-	ofDrawBitmapString("load distortion\n" + distortion->directory, loadDistortionButton->x + 10, loadDistortionButton->y + 15);
-
-	ofRect(setOutputDirectoryButton->x,setOutputDirectoryButton->y, setOutputDirectoryButton->width,setOutputDirectoryButton->height);
-	ofDrawBitmapString("load output\n" + exporter->pathPrefix, setOutputDirectoryButton->x + 10, setOutputDirectoryButton->y + 15);
+//	ofRect(loadSourceBButton->x,loadSourceBButton->y, loadSourceBButton->width,loadSourceBButton->height);
+//	ofDrawBitmapString("load source b\n" + sourceB->directory, loadSourceBButton->x + 10, loadSourceBButton->y + 15);
+//
+//	ofRect(loadDistortionButton->x,loadDistortionButton->y, loadDistortionButton->width,loadDistortionButton->height);
+//	ofDrawBitmapString("load distortion\n" + distortion->directory, loadDistortionButton->x + 10, loadDistortionButton->y + 15);
+//
+//	ofRect(setOutputDirectoryButton->x,setOutputDirectoryButton->y, setOutputDirectoryButton->width,setOutputDirectoryButton->height);
+//	ofDrawBitmapString("load output\n" + exporter->pathPrefix, setOutputDirectoryButton->x + 10, setOutputDirectoryButton->y + 15);
 
 	ofRect(exportCurrentViewButton->x,exportCurrentViewButton->y, exportCurrentViewButton->width,exportCurrentViewButton->height);
 	ofDrawBitmapString("export\ncurrent view", exportCurrentViewButton->x + 10, exportCurrentViewButton->y + 15);
@@ -693,9 +707,9 @@ ofTexture* THISTimeline::getCurrentPreviewFrame(THISSequence* source, ofTexture*
 	}
 
 	if(!previewFrame->bAllocated()){
-		previewFrame->allocate(frameImage->getWidth(), frameImage->getHeight(), glTypeForImageType(frameImage->type));
+		previewFrame->allocate(frameImage->getWidth(), frameImage->getHeight(), glTypeForImageType(frameImage->getPixelsRef().getImageType()));
 	}
-	previewFrame->loadData(frameImage->getPixels(), frameImage->getWidth(), frameImage->getHeight(), glTypeForImageType(frameImage->type));
+	previewFrame->loadData(frameImage->getPixels(), frameImage->getWidth(), frameImage->getHeight(), glTypeForImageType(frameImage->getPixelsRef().getImageType()));
     return previewFrame;
 }
 
@@ -765,9 +779,9 @@ ofTexture* THISTimeline::getCurrentPreviewOutputFrame()
 	}
 
 	if(!previewOutputFrame->bAllocated()){
-		previewOutputFrame->allocate(outputframe->getWidth(), outputframe->getHeight(), glTypeForImageType(outputframe->type));
+		previewOutputFrame->allocate(outputframe->getWidth(), outputframe->getHeight(), glTypeForImageType(outputframe->getPixelsRef().getImageType()));
 	}
-	previewOutputFrame->loadData(outputframe->getPixels(), outputframe->getWidth(), outputframe->getHeight(), glTypeForImageType(outputframe->type));
+	previewOutputFrame->loadData(outputframe->getPixels(), outputframe->getWidth(), outputframe->getHeight(), glTypeForImageType(outputframe->getPixelsRef().getImageType()));
 	return previewOutputFrame;
 }
 
@@ -849,70 +863,101 @@ void THISTimeline::objectDidMouseMove(ofxMSAInteractiveObject* object, int x, in
 
 void THISTimeline::objectDidRelease(ofxMSAInteractiveObject* object, int x, int y, int button)
 {
-	if(!exporting){
-		if(object == loadCompButton){
-			string directoryName;
-			string directoryPath;
-			/*
-			ofxFileDialogCocoa fileDialog;
-			fileDialog.canChooseDirectory = true;
-			fileDialog.canChooseFile = false;
-			fileDialog.open("/", "", directoryName, directoryPath);
-			cout << "set comp directory to " << directoryName << " absolute " << directoryPath << endl;
-			loadComposition(directoryName+"/");
-			 */
-			ofFileDialogResult result = ofSystemLoadDialog("Load Composition", true);
-			if(result.bSuccess){
-				loadComposition(result.getPath());
-			}
+	if(object == cancelExportButton){
+		exporter->cancelExport();
+		return;
+	}
+	
+	if(exporting){
+		return;
+	}
+	if(object == newCompButton){
+		ofSystemAlertDialog("Choose where to save your comp files");
+		string newWorkingDirectory = "";
+		string newADir = "";
+		string newBDir = "";
+		string newDistortDir = "";
+		string newOutDir = "";
+		ofFileDialogResult result;
+		result = ofSystemLoadDialog("Choose Comp Directory", true);
+		if(result.bSuccess){
+			newWorkingDirectory = result.filePath;
 		}
-
-		if(object == loadSourceAButton){
-			sourceA->loadSequence();
-			if(sourceA->isLoaded()){
-				settings.setValue("settings:source_directory_a", sourceA->directory);
-				settings.saveFile(settingsFileName);
-			}
+		else{
+			ofSystemAlertDialog("You didn't select a Comp directory.");
+			return;
 		}
-
-		if(object == loadSourceBButton){
-			sourceB->loadSequence();
-			if(sourceB->isLoaded()){
-				settings.setValue("settings:source_directory_b", sourceB->directory);
-				settings.saveFile(settingsFileName);
-			}
+		
+		ofSystemAlertDialog("Choose SOURCE A sequence folder");
+		result = ofSystemLoadDialog("Choose SOURCE A sequence folder", true);
+		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+			//settings.setValue("settings:source_directory_a", result.filePath);
+			newADir = result.filePath;
 		}
-
-		if(object == loadDistortionButton){
-			distortion->loadSequence();
-			if(distortion->isLoaded()){
-				settings.setValue("settings:distortion_directory", distortion->directory);
-				settings.saveFile(settingsFileName);
-			}
-
-			createDistortionCaches();
+		else{
+			ofSystemAlertDialog("Failed to load Source A Sequence directory");
+			return;
 		}
-
-		if(object == setOutputDirectoryButton){
-			//cout << "set output directory to " << directoryName << " absolute " << exporter->pathPrefix << endl;
-			ofFileDialogResult result = ofSystemLoadDialog("Set Output Directory", true);
-			if(result.bSuccess){
-				exporter->pathPrefix = result.getPath();
-				settings.setValue("settings:output_directory", exporter->pathPrefix);
-			}
+	
+		ofSystemAlertDialog("Choose SOURCE B sequence folder");
+		result = ofSystemLoadDialog("Choose SOURCE B sequence folder", true);
+		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+			//settings.setValue("settings:source_directory_b", result.filePath);
+			newBDir = result.filePath;
 		}
-
-		if(object == exportEntireSequenceButton){
-			exportEntireSequence();
+		else{
+			ofSystemAlertDialog("Failed to load Source B Sequence");
+			return;
 		}
-
-		if(object == exportCurrentViewButton){
-			exportCurrentView();
+		
+		ofSystemAlertDialog("Choose DISTORTION sequence folder");
+		result = ofSystemLoadDialog("Choose DISTORTION sequence folder", true);
+		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+			//settings.setValue("settings:distortion_directory", result.filePath);
+			newDistortDir = result.filePath;
+		}
+		else{
+			ofSystemAlertDialog("Failed to load Distortion Sequence");
+			return;
+		}
+		
+		ofSystemAlertDialog("Set OUTPUT Directory");			
+		result = ofSystemLoadDialog("Set Output Directory", true);
+		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+//			exporter->pathPrefix = result.getPath();
+//			settings.setValue("settings:output_directory", exporter->pathPrefix);
+			newOutDir = result.filePath;
+		}
+		else{
+			ofSystemAlertDialog("Failed to select output directory");
+			return;
+		}
+		
+		setWorkingFolder(result.filePath);
+		settings.setValue("settings:source_directory_a", newADir);		
+		settings.setValue("settings:source_directory_b", newBDir);
+		settings.setValue("settings:distortion_directory", newDistortDir);
+		exporter->pathPrefix = newOutDir;
+		settings.setValue("settings:output_directory", newOutDir);
+		
+		//settings.saveFile(settingsFileName);
+		loadComposition(settings);
+	}
+	else if(object == loadCompButton){
+		ofFileDialogResult result = ofSystemLoadDialog("Load Composition", true);
+		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+			loadComposition(result.getPath());
 		}
 	}
 
-	if(object == cancelExportButton){
-		exporter->cancelExport();
+	if(object == exportEntireSequenceButton){
+		ofSystemAlertDialog("Pressed EXPORT ALL");
+		exportEntireSequence();
+	}
+
+	if(object == exportCurrentViewButton){
+		ofSystemAlertDialog("Pressed EXPORT CURRENT");
+		exportCurrentView();
 	}
 }
 
