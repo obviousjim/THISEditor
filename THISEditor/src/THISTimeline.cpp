@@ -346,19 +346,11 @@ void THISTimeline::draw()
 	ofNoFill();
 	ofSetColor(80, 80, 80);
 	
-	ofRect(newCompButton->x,newCompButton->y, newCompButton->width, newCompButton->height/2);
+	ofRect(newCompButton->x,newCompButton->y, newCompButton->width, newCompButton->height);
+	ofDrawBitmapString("new comp", newCompButton->x + 10, newCompButton->y + 15);
 
 	ofRect(loadCompButton->x,loadCompButton->y, loadCompButton->width,loadCompButton->height);
-	ofDrawBitmapString("load comp\n" + load->directory, loadCompButton->x + 10, loadCompButton->y + 15);
-
-//	ofRect(loadSourceBButton->x,loadSourceBButton->y, loadSourceBButton->width,loadSourceBButton->height);
-//	ofDrawBitmapString("load source b\n" + sourceB->directory, loadSourceBButton->x + 10, loadSourceBButton->y + 15);
-//
-//	ofRect(loadDistortionButton->x,loadDistortionButton->y, loadDistortionButton->width,loadDistortionButton->height);
-//	ofDrawBitmapString("load distortion\n" + distortion->directory, loadDistortionButton->x + 10, loadDistortionButton->y + 15);
-//
-//	ofRect(setOutputDirectoryButton->x,setOutputDirectoryButton->y, setOutputDirectoryButton->width,setOutputDirectoryButton->height);
-//	ofDrawBitmapString("load output\n" + exporter->pathPrefix, setOutputDirectoryButton->x + 10, setOutputDirectoryButton->y + 15);
+	ofDrawBitmapString("load comp\n" + currentCompFolder, loadCompButton->x + 10, loadCompButton->y + 15);
 
 	ofRect(exportCurrentViewButton->x,exportCurrentViewButton->y, exportCurrentViewButton->width,exportCurrentViewButton->height);
 	ofDrawBitmapString("export\ncurrent view", exportCurrentViewButton->x + 10, exportCurrentViewButton->y + 15);
@@ -911,7 +903,6 @@ void THISTimeline::objectDidRelease(ofxMSAInteractiveObject* object, int x, int 
 		ofSystemAlertDialog("Choose DISTORTION sequence folder");
 		result = ofSystemLoadDialog("Choose DISTORTION sequence folder", true);
 		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
-			//settings.setValue("settings:distortion_directory", result.filePath);
 			newDistortDir = result.filePath;
 		}
 		else{
@@ -922,8 +913,6 @@ void THISTimeline::objectDidRelease(ofxMSAInteractiveObject* object, int x, int 
 		ofSystemAlertDialog("Set OUTPUT Directory");			
 		result = ofSystemLoadDialog("Set Output Directory", true);
 		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
-//			exporter->pathPrefix = result.getPath();
-//			settings.setValue("settings:output_directory", exporter->pathPrefix);
 			newOutDir = result.filePath;
 		}
 		else{
