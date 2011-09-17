@@ -10,7 +10,7 @@
 #include "THISTimeline.h"
 //#include "ofxFileDialogCocoa.h"
 
-#define MAX_BLENDED_DISTORTION 50
+#define MAX_BLENDED_DISTORTION 25
 
 bool blendedframesort(BlendedDistortionFrame* a, BlendedDistortionFrame* b)
 {
@@ -346,7 +346,7 @@ void THISTimeline::draw()
 	ofNoFill();
 	ofSetColor(80, 80, 80);
 	
-	ofRect(newCompButton->x,newCompButton->y, newCompButton->width, newCompButton->height);
+	ofRect(newCompButton->x,newCompButton->y, newCompButton->width, newCompButton->height	);
 	ofDrawBitmapString("new comp", newCompButton->x + 10, newCompButton->y + 15);
 
 	ofRect(loadCompButton->x,loadCompButton->y, loadCompButton->width,loadCompButton->height);

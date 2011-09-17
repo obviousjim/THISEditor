@@ -10,7 +10,7 @@
 #include "THISSequence.h"
 #include "ofFileUtils.h"
 
-#define MAX_FRAMES 75
+#define MAX_FRAMES 50
 #define MAX_THUMBS 500
 
 bool framesort(THISFrame* a, THISFrame* b)
