@@ -38,6 +38,7 @@ class THISTimeline : public ofxMSAInteractiveObjectDelegate
 
 
 	void setup();
+	void newComposition();
 	bool loadComposition(string compFolder);
 	bool loadComposition(ofxXmlSettings compSettings);
 	void setWorkingFolder(string folder);

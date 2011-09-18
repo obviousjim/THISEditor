@@ -136,13 +136,16 @@ void THISTimeline::setup()
 			ofDirectory::createDirectory("defaultcomp", true);
 		}
 		defaultComp = ofToDataPath("deafultcomp/", true);
-
+		
 		cout << "DEFAULT COMP IS " << defaultComp << endl;
 		ofDisableDataPath();
 
 	}
-	loadComposition(defaultComp);
-
+	
+	if(!loadComposition(defaultComp)){
+		//create a new comp
+		newComposition();
+	}
 }
 
 bool THISTimeline::loadComposition(string compFolder)
@@ -155,7 +158,7 @@ bool THISTimeline::loadComposition(string compFolder)
 	setWorkingFolder(compFolder);
 	
     if(settings.loadFile(settingsFileName)){
-		loadComposition(settings);
+		return loadComposition(settings);
     }
 	else{
 		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Failed to load settings file '" + settingsFileName + "'.");
@@ -206,7 +209,7 @@ bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
 	}
 	else {
 		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Sequence A failed to load from directory " + sourceSequenceADirectory);
-		//			return false;
+		return false;
 	}
 	
 	if(sourceSequenceBDirectory != "" && ofDirectory::doesDirectoryExist(sourceSequenceBDirectory)){
@@ -214,7 +217,7 @@ bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
 	}
 	else{
 		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Sequence B failed to load from directory: " + sourceSequenceBDirectory);
-		//			return false;
+		return false;
 	}
 	
 	if(disortionSequenceDirectory != "" && ofDirectory::doesDirectoryExist(disortionSequenceDirectory)){
@@ -224,7 +227,7 @@ bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
 	}
 	else{
 		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Distortion Sequence failed to load from directory: " + disortionSequenceDirectory);
-		//			return false;
+		return false;
 	}
 	
 	if(outputSequenceDirectory != "" && ofDirectory::doesDirectoryExist(outputSequenceDirectory)){
@@ -232,6 +235,7 @@ bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
 	}
 	else {
 		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Output directory '" + outputSequenceDirectory + "' not found");
+		return false;
 	}
 	
 	playheadPosition = settings.getValue("settings:playhead", 0.0);
@@ -246,7 +250,7 @@ bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
 #define SWITCHER_HEIGHT 30
 #define BUTTON_WIDTH 25
 #define ELEMENT_SPACER 15
-#define BIG_BUTTON_WIDTH 400
+#define BIG_BUTTON_WIDTH 700
 #define BIG_BUTTON_HEIGHT 40
 
 void THISTimeline::draw()
@@ -350,8 +354,18 @@ void THISTimeline::draw()
 	ofDrawBitmapString("new comp", newCompButton->x + 10, newCompButton->y + 15);
 
 	ofRect(loadCompButton->x,loadCompButton->y, loadCompButton->width,loadCompButton->height);
-	ofDrawBitmapString("load comp\n" + currentCompFolder, loadCompButton->x + 10, loadCompButton->y + 15);
+	ofDrawBitmapString("load comp", loadCompButton->x + 10, loadCompButton->y + 15);
 
+	float yStart = loadCompButton->y+loadCompButton->height+20;
+	ofRect(loadCompButton->x,yStart, loadCompButton->width, 80);
+	ofDrawBitmapString("Comp " + currentCompFolder + 
+					   "\nSource A " + sourceA->directory +
+					   "\nSource B " + sourceB->directory +
+					   "\nDistortion " + distortion->directory +
+					   "\nOutput " + exporter->pathPrefix, 
+					   loadCompButton->x + 10, yStart + 15);
+
+	
 	ofRect(exportCurrentViewButton->x,exportCurrentViewButton->y, exportCurrentViewButton->width,exportCurrentViewButton->height);
 	ofDrawBitmapString("export\ncurrent view", exportCurrentViewButton->x + 10, exportCurrentViewButton->y + 15);
 
@@ -795,7 +809,7 @@ void THISTimeline::purgeMemoryForExport()
 
 		int numToDelete = blendedDistortionSorted.size() - MAX_BLENDED_DISTORTION;
 
-		cout << "Deleteing " << numToDelete << " blended with age " << (ofGetElapsedTimef() - blendedDistortionSorted[0]->lastUsedTime) << endl;
+		//cout << "Deleteing " << numToDelete << " blended with age " << (ofGetElapsedTimef() - blendedDistortionSorted[0]->lastUsedTime) << endl;
 
 		for(int i = 0; i < numToDelete; i++){
 			blendedDistortionSorted[i]->loaded = false;
@@ -864,71 +878,7 @@ void THISTimeline::objectDidRelease(ofxMSAInteractiveObject* object, int x, int 
 	}
 	
 	if(object == newCompButton){
-		ofSystemAlertDialog("Choose where to save your comp files");
-		string newWorkingDirectory = "";
-		string newADir = "";
-		string newBDir = "";
-		string newDistortDir = "";
-		string newOutDir = "";
-		ofFileDialogResult result;
-		result = ofSystemLoadDialog("Choose Comp Directory", true);
-		if(result.bSuccess){
-			newWorkingDirectory = result.filePath;
-		}
-		else{
-			ofSystemAlertDialog("You didn't select a Comp directory.");
-			return;
-		}
-		
-		ofSystemAlertDialog("Choose SOURCE A sequence folder");
-		result = ofSystemLoadDialog("Choose SOURCE A sequence folder", true);
-		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
-			newADir = result.filePath;
-		}
-		else{
-			ofSystemAlertDialog("Failed to load Source A Sequence directory");
-			return;
-		}
-	
-		ofSystemAlertDialog("Choose SOURCE B sequence folder");
-		result = ofSystemLoadDialog("Choose SOURCE B sequence folder", true);
-		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
-			newBDir = result.filePath;
-		}
-		else{
-			ofSystemAlertDialog("Failed to load Source B Sequence");
-			return;
-		}
-		
-		ofSystemAlertDialog("Choose DISTORTION sequence folder");
-		result = ofSystemLoadDialog("Choose DISTORTION sequence folder", true);
-		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
-			newDistortDir = result.filePath;
-		}
-		else{
-			ofSystemAlertDialog("Failed to load Distortion Sequence");
-			return;
-		}
-		
-		ofSystemAlertDialog("Set OUTPUT Directory");			
-		result = ofSystemLoadDialog("Set Output Directory", true);
-		if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
-			newOutDir = result.filePath;
-		}
-		else{
-			ofSystemAlertDialog("Failed to select output directory");
-			return;
-		}
-		
-		setWorkingFolder(newWorkingDirectory);
-		settings.setValue("settings:source_directory_a", newADir);		
-		settings.setValue("settings:source_directory_b", newBDir);
-		settings.setValue("settings:distortion_directory", newDistortDir);
-		exporter->pathPrefix = newOutDir;
-		settings.setValue("settings:output_directory", newOutDir);
-		
-		//settings.saveFile(settingsFileName);
-		loadComposition(settings);
+		newComposition();
 	}
 	else if(object == loadCompButton){
 		ofFileDialogResult result = ofSystemLoadDialog("Load Composition", true);
@@ -944,6 +894,75 @@ void THISTimeline::objectDidRelease(ofxMSAInteractiveObject* object, int x, int 
 	if(object == exportCurrentViewButton){
 		exportCurrentView();
 	}
+}
+
+void THISTimeline::newComposition(){
+	ofSystemAlertDialog("Choose where to save your comp files");
+	string newWorkingDirectory = "";
+	string newADir = "";
+	string newBDir = "";
+	string newDistortDir = "";
+	string newOutDir = "";
+	ofFileDialogResult result;
+	result = ofSystemLoadDialog("Choose Comp Directory", true);
+	if(result.bSuccess){
+		newWorkingDirectory = result.filePath;
+	}
+	else{
+		ofSystemAlertDialog("You didn't select a Comp directory.");
+		return;
+	}
+	
+	ofSystemAlertDialog("Choose SOURCE A sequence folder");
+	result = ofSystemLoadDialog("Choose SOURCE A sequence folder", true);
+	if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+		newADir = result.filePath;
+	}
+	else{
+		ofSystemAlertDialog("Failed to load Source A Sequence directory");
+		return;
+	}
+	
+	ofSystemAlertDialog("Choose SOURCE B sequence folder");
+	result = ofSystemLoadDialog("Choose SOURCE B sequence folder", true);
+	if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+		newBDir = result.filePath;
+	}
+	else{
+		ofSystemAlertDialog("Failed to load Source B Sequence");
+		return;
+	}
+	
+	ofSystemAlertDialog("Choose DISTORTION sequence folder");
+	result = ofSystemLoadDialog("Choose DISTORTION sequence folder", true);
+	if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+		newDistortDir = result.filePath;
+	}
+	else{
+		ofSystemAlertDialog("Failed to load Distortion Sequence");
+		return;
+	}
+	
+	ofSystemAlertDialog("Set OUTPUT Directory");			
+	result = ofSystemLoadDialog("Set Output Directory", true);
+	if(result.bSuccess && ofDirectory::doesDirectoryExist(result.filePath, false)){
+		newOutDir = result.filePath;
+	}
+	else{
+		ofSystemAlertDialog("Failed to select output directory");
+		return;
+	}
+	
+	setWorkingFolder(newWorkingDirectory);
+	settings.setValue("settings:source_directory_a", newADir);		
+	settings.setValue("settings:source_directory_b", newBDir);
+	settings.setValue("settings:distortion_directory", newDistortDir);
+	exporter->pathPrefix = newOutDir;
+	settings.setValue("settings:output_directory", newOutDir);
+	
+	loadComposition(settings);	
+	settings.saveFile(settingsFileName);
+
 }
 
 void THISTimeline::createDistortionCaches()

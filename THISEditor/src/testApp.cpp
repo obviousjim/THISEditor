@@ -10,7 +10,7 @@ void testApp::setup(){
 
 
     timeline->position = ofPoint(0, 3*720/4*.75 + 20);
-    timeline->uiposition = ofPoint(1280, 0);
+    timeline->uiposition = ofPoint(960, 0);
 
 	outputImage = NULL;
 
@@ -27,7 +27,6 @@ void testApp::update(){
 //--------------------------------------------------------------
 void testApp::draw(){
     ofBackground(20,20,20);
-	ofEnableAlphaBlending();
 	
     if(timeline->allSequencesLoaded()){
 

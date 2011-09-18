@@ -125,19 +125,14 @@ bool THISFrame::loadFrame()
         thumbnail->resize(thumbWidth, thumbHeight);
         thumbnail->saveImage(thumbFilename);
         if(type != OF_IMAGE_UNDEFINED && thumbnail->getPixelsRef().getImageType() != type){
-			cout << "WARNING CHANGING THUMB TYPE FROM " << thumbnail->getPixelsRef().getImageType() << " to " << type << endl;
             thumbnail->setImageType(type);
         }
         thumbLoaded = true;
     }
-	
-		
+			
 	if(type != OF_IMAGE_UNDEFINED && frame->getPixelsRef().getImageType() != type){
-		cout << "WARNING CHANGING FRAME TYPE FROM " << thumbnail->getPixelsRef().getImageType() << " to " << type << endl;
 		frame->setImageType(type);
 	}
-
-	cout << "file name is " << filename << " frame type is " << frame->getPixelsRef().getImageType() << endl;
 
 	frameWidth = frame->getWidth();
 	frameHeight = frame->getHeight();
@@ -170,7 +165,7 @@ bool THISFrame::loadThumb()
     thumbnail->clear();
     thumbnail->setUseTexture(false);
     if(!thumbnail->loadImage(thumbFilename)){
-        ofLog(OF_LOG_ERROR, "THISFrame - ERROR - thumbnail file exists " + thumbFilename + " but was corrputed. reloading." );
+		ofLog(OF_LOG_ERROR, "THISFrame - ERROR - thumbnail file exists " + thumbFilename + " but was corrputed. reloading." );
         return loadFrame();
     }
 
@@ -190,33 +185,6 @@ bool THISFrame::loadThumb()
     thumbLoaded = true;
 	return true;
 }
-
-
-/*
-bool THISFrame::generateThumbnail()
-{
-	//load and create thumbnail
-	bool frameAlreadyLoaded = frameLoaded;
-	bool success = frameAlreadyLoaded || loadFrame();
-	if(!success){
-		ofLog(OF_LOG_ERROR, "THISFrame - ERROR - failed to load file " + filename);
-		return false;
-	}
-	thumbnail->clone(*frame);
-	thumbWidth = desiredThumbWidth;
-	float scaleFactor = 1.0*frame->getWidth() / thumbWidth;
-	thumbHeight = frame->getHeight() / scaleFactor;
-	thumbnail->resize(thumbWidth, thumbHeight);
-	thumbnail->saveImage(thumbFilename, OF_IMAGE_QUALITY_MEDIUM);
-	if(!frameAlreadyLoaded){
-		frame->clear();
-		frame->setUseTexture(false);
-		frameLoaded = false;
-	}
-	thumbLoaded = true;
-	return true;
-}
-*/
 
 int THISFrame::getFullFrameWidth()
 {

@@ -160,7 +160,9 @@ void THISSequence::recomputePreview()
 	}
 
 	framesToShow = (drawWidth / widthPerFrame);
-
+	if(framesToShow == 0){
+		return;
+	}
 	int startIndex = getIndexAtPercent(drawRange.min);
 	int endIndex = getIndexAtPercent(drawRange.max);
 	int framesInRange = (endIndex - startIndex);
