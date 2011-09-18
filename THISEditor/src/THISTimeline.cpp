@@ -143,7 +143,6 @@ void THISTimeline::setup()
 	}
 	
 	if(!loadComposition(defaultComp)){
-		//create a new comp
 		newComposition();
 	}
 }
@@ -329,7 +328,6 @@ void THISTimeline::draw()
     playheadBar->setSize(totalWidth, totalHeight);
 
 
-//    return;
 
 	//---------- KEYFRAME POSITIONS
 	float keyframeStartY = position.y+FRAME_TICKER_HEIGHT+sourcePreviewHeight*3+ELEMENT_SPACER;
@@ -377,13 +375,13 @@ void THISTimeline::draw()
 
     ofPopStyle();
 
-
     if(!allSequencesLoaded()){
         return;
     }
 
     ofPushStyle();
 	//---------- PROGRESS
+
 
 	ofNoFill();
 	ofRect(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*6, BIG_BUTTON_WIDTH, BIG_BUTTON_HEIGHT/2);
@@ -393,6 +391,10 @@ void THISTimeline::draw()
 		ofSetColor(200, 200, 100, 40);
 		ofRect(uiposition.x, uiposition.y+(BIG_BUTTON_HEIGHT+ELEMENT_SPACER)*6, BIG_BUTTON_WIDTH*percentDone, BIG_BUTTON_HEIGHT/2);
 	}
+	
+	//draw frame numbers
+	
+	//---------- frame Info
 
 
     //draw frame ticker
@@ -400,6 +402,11 @@ void THISTimeline::draw()
     int firstFrame = getFirstFrameInView();
     int lastFrame = getLastFrameInView();
     int totalFrames = (lastFrame - firstFrame);
+	
+	ofDrawBitmapString("First Frame:  " + ofToString(firstFrame) + "\n"+
+					   "Last Frame:   " + ofToString(lastFrame) + "\n" +
+					   "Total Frames: " + ofToString(totalFrames), frameInfoPosition);
+	
     float pixelsPerFrame = (width-BUTTON_WIDTH*2.0) / totalFrames;
     int frameStep = 1;
     bool drawFullRect = false;
@@ -428,7 +435,6 @@ void THISTimeline::draw()
         float xPixelPos = ofMap(i, 0, totalFrames, BUTTON_WIDTH, width-BUTTON_WIDTH, true);
         ofLine(xPixelPos, position.y+FRAME_TICKER_HEIGHT/2., xPixelPos, position.y+FRAME_TICKER_HEIGHT);
     }
-
 
 	ofSetColor(255, 255, 255);
     sourceA->setDrawWidth(totalWidth);
@@ -495,9 +501,11 @@ void THISTimeline::draw()
     //--------------- DRAW PLAYHEAD
     if(rollingOverPlayhead){
 	    ofSetColor(255, 0, 0, 100);
-        ofLine(position.x + BUTTON_WIDTH + totalWidth*playheadFloatPosition, position.y,
-               position.x + BUTTON_WIDTH + totalWidth*playheadFloatPosition, position.y+totalHeight-FRAME_TICKER_HEIGHT-ELEMENT_SPACER);
+		float playheadX = position.x + BUTTON_WIDTH + totalWidth*playheadFloatPosition;
+        ofLine(playheadX, position.y,
+               playheadX, position.y+totalHeight-FRAME_TICKER_HEIGHT-ELEMENT_SPACER);
 
+						   
 		//draw distortion width
 		if(loadedReferenceSource != NULL){
 			ofSetColor(255, 0, 0, 50);
@@ -506,7 +514,19 @@ void THISTimeline::draw()
 			float minX = BUTTON_WIDTH + ofMap(minXPercent, zoomer->getViewRange().min, zoomer->getViewRange().max, 0, totalWidth, true);
 			float maxX = BUTTON_WIDTH + ofMap(maxXPercent, zoomer->getViewRange().min, zoomer->getViewRange().max, 0, totalWidth, true);
 			ofRect(minX, position.y+FRAME_TICKER_HEIGHT,  (maxX-minX), totalHeight-FRAME_TICKER_HEIGHT*2-ELEMENT_SPACER);
+			
+			ofSetColor(255, 200, 20);
+			//draw frame ticker
+			ofDrawBitmapString(ofToString(getCurrentWindowStartFrame()), ofPoint(minX, position.y-10)) ;
+
+			//draw frame ticker
+			ofDrawBitmapString(ofToString(getCurrentWindowEndFrame()), ofPoint(maxX, position.y+10)) ;
+			
 		}
+		ofSetColor(255, 200, 20);
+		//draw frame ticker
+		ofDrawBitmapString(ofToString(loadedReferenceSource->getIndexAtPercent(zoomedPlayheadFloatPosition)), ofPoint(playheadX, position.y)) ;
+		
     }
 
     ofPopStyle();

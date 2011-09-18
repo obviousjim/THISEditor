@@ -11,7 +11,8 @@ void testApp::setup(){
 
     timeline->position = ofPoint(0, 3*720/4*.75 + 20);
     timeline->uiposition = ofPoint(960, 0);
-
+	timeline->frameInfoPosition = ofPoint(3*1280/4*.75+20, 2*720/4*.75 + 20);
+	
 	outputImage = NULL;
 
 	ofSetFullscreen(true);

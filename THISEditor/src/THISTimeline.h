@@ -50,7 +50,8 @@ class THISTimeline : public ofxMSAInteractiveObjectDelegate
 
     ofPoint position;
 	ofPoint uiposition;
-
+	ofPoint frameInfoPosition;
+	
 	float width;
     bool allSequencesLoaded();
 
