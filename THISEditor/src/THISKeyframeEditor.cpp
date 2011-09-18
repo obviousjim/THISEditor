@@ -396,12 +396,18 @@ void THISKeyframeEditor::keyPressed(ofKeyEventArgs& args)
 	if(hasFocus && selectedKeyframe != NULL){
 		
 		if(args.key == OF_KEY_UP){
-			selectedKeyframe->position.y = MIN( int(100*selectedKeyframe->position.y+1)/100.0, 1.0);
+			float originalpercent = selectedKeyframe->position.y;
+			float curPercent = selectedKeyframe->position.y*100 + 1;			
+			int curPercentInt = MIN(curPercent+.5, 100);
+			selectedKeyframe->position.y = curPercentInt/100.0;
+			//cout << "orig " << originalpercent << " cur perc " << curPercent << " cur perc int " << curPercentInt << " new frame " << selectedKeyframe->position.y << endl;
 			modified = true;
 		}
 		
 		if(args.key == OF_KEY_DOWN){
-			selectedKeyframe->position.y = MAX( int(100*selectedKeyframe->position.y-1)/100.0, 0.0);			
+			float curPercent = selectedKeyframe->position.y*100 - 1;
+			int curPercentInt = MAX(curPercent+.5, 0);
+			selectedKeyframe->position.y = curPercentInt/100.0;
 			modified = true;
 		}
 		

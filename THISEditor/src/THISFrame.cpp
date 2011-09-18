@@ -175,7 +175,6 @@ bool THISFrame::loadThumb()
     }
 
 	if(type != OF_IMAGE_UNDEFINED && thumbnail->getPixelsRef().getImageType() != type){
-		cout << "WARNING CHANGING THUMB TYPE" << endl;
 		thumbnail->setImageType( type );
     }
 	

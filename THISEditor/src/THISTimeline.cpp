@@ -375,6 +375,17 @@ void THISTimeline::draw()
 
     ofPopStyle();
 
+	//draw frame ticker
+    //TODO: put into timeline object
+    int firstFrame = getFirstFrameInView();
+    int lastFrame = getLastFrameInView();
+    int totalFrames = (lastFrame - firstFrame);
+	
+	ofDrawBitmapString("First Frame:  " + ofToString(firstFrame) + "\n"+
+					   "Last Frame:   " + ofToString(lastFrame) + "\n" +
+					   "Total Frames: " + ofToString(totalFrames), frameInfoPosition);
+	
+	
     if(!allSequencesLoaded()){
         return;
     }
@@ -397,16 +408,6 @@ void THISTimeline::draw()
 	//---------- frame Info
 
 
-    //draw frame ticker
-    //TODO: put into timeline object
-    int firstFrame = getFirstFrameInView();
-    int lastFrame = getLastFrameInView();
-    int totalFrames = (lastFrame - firstFrame);
-	
-	ofDrawBitmapString("First Frame:  " + ofToString(firstFrame) + "\n"+
-					   "Last Frame:   " + ofToString(lastFrame) + "\n" +
-					   "Total Frames: " + ofToString(totalFrames), frameInfoPosition);
-	
     float pixelsPerFrame = (width-BUTTON_WIDTH*2.0) / totalFrames;
     int frameStep = 1;
     bool drawFullRect = false;
@@ -561,12 +562,12 @@ bool THISTimeline::allSequencesLoaded()
 
 int THISTimeline::getWindowStartFrame(int baseFrame)
 {
-	return getWindowStartFrame( baseFrame/(getSequenceLength()-1.0f) );
+	return getWindowStartFrame( (baseFrame+.5f) /(getSequenceLength()-1.0f) );
 }
 
 int THISTimeline::getWindowEndFrame(int baseFrame)
 {
-	return getWindowEndFrame( baseFrame/(getSequenceLength()-1.0f) );
+	return getWindowEndFrame( (baseFrame+.5f)/(getSequenceLength()-1.0f) );
 }
 
 int THISTimeline::getWindowStartFrame(float percent)

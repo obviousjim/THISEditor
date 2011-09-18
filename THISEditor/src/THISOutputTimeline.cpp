@@ -50,9 +50,6 @@ ofImage* THISOutputTimeline::renderOutputFrame(bool thumb)
 	int mapMin;
 	int mapMax;
 	float* delayMapPixels;
-
-	//	cout << "current output frame " << outputFrame << endl;
-	
 	if(thumb){
 		delayMapPixels = inputTimeline->getCurrentBlendedDistortionFrame(true);
 		mapMin = inputTimeline->getCurrentWindowStartFrame();
@@ -65,6 +62,9 @@ ofImage* THISOutputTimeline::renderOutputFrame(bool thumb)
 	}
 	
 	if(mapMax <= mapMin+1){
+		if(!thumb){
+			cout << "no width copying map min " << mapMin << " output frame " << outputFrame << endl;
+		}
 		memcpy(outbuffer, inputTimeline->getSourcePixelsForFrame(mapMin, thumb), imagewidth*imageheight*bytesPerPixel);
 	}
 	else{
