@@ -69,6 +69,9 @@ class THISKeyframeEditor
 	void reset();
 	void clear();
 	
+	int durationInFrames;
+	bool snapToFrame;
+
   private:		
 	string xmlFileName;
 	

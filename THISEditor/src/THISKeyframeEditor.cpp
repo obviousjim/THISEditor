@@ -40,6 +40,9 @@ THISKeyframeEditor::THISKeyframeEditor()
 	enabled = true;
 	drawingEasingWindow = false;
 	
+	durationInFrames = 0;
+	snapToFrame = false;
+
 	xmlFileName = "_keyframes.xml";
 }
 
@@ -124,7 +127,7 @@ void THISKeyframeEditor::draw()
 		}
 		ofVec2f screenpoint = coordForKeyframePoint(keyframes[i]->position);
 		if(keyframes[i] == selectedKeyframe){
-			ofDrawBitmapString(ofToString(selectedKeyframe->position.y*100, 2) + "%", screenpoint.x+5, screenpoint.y+10);
+			ofDrawBitmapString(ofToString(selectedKeyframe->position.y*100, 2) + "%\n"+ofToString(selectedKeyframe->position.x*durationInFrames), screenpoint.x+5, screenpoint.y+10);
 			ofFill();
 		}
 		else{
@@ -413,11 +416,23 @@ void THISKeyframeEditor::keyPressed(ofKeyEventArgs& args)
 		
 		if(selectedKeyframe != firstkey && selectedKeyframe != lastkey){
 			if(args.key == OF_KEY_RIGHT){
-				selectedKeyframe->position.x = MIN(selectedKeyframe->position.x+.0001, maxBound);			
+				if(snapToFrame){
+					int frame = selectedKeyframe->position.x * durationInFrames + 1.01;
+					selectedKeyframe->position.x = MIN(float(frame)/(durationInFrames), maxBound);
+				}
+				else{
+					selectedKeyframe->position.x = MIN(selectedKeyframe->position.x+.0001, maxBound);	
+				}
 				modified = true;
 			}
 			if(args.key == OF_KEY_LEFT){
-				selectedKeyframe->position.x = MAX(selectedKeyframe->position.x-.0001, minBound);			
+				if(snapToFrame){
+					int frame = selectedKeyframe->position.x * durationInFrames - .99;
+					selectedKeyframe->position.x = MAX(float(frame)/(durationInFrames), minBound);
+				}
+				else{
+					selectedKeyframe->position.x = MAX(selectedKeyframe->position.x-.0001, minBound);			
+				}
 				modified = true;
 			}
 		}
@@ -425,8 +440,7 @@ void THISKeyframeEditor::keyPressed(ofKeyEventArgs& args)
 	
 	if(autosave && modified){
 		saveToXML();
-	}
-	
+	}	
 }
 
 THISKeyframe* THISKeyframeEditor::keyframeAtScreenpoint(ofVec2f p, int& selectedIndex){

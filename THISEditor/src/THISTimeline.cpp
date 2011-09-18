@@ -71,7 +71,12 @@ void THISTimeline::setup()
 	sourcekeys = new THISKeyframeEditor();
 	blendkeys = new THISKeyframeEditor();
 	zoomer = new THISTimelineZoom();
-
+	
+	maxwidthkeys->snapToFrame = true;
+	minwidthkeys->snapToFrame = true;
+	sourcekeys->snapToFrame = true;
+	blendkeys->snapToFrame = true;
+	
 	//TODO: make many and multithreaded...
 	exporter = new THISExporter();
 	exporter->inputTimeline = this;
@@ -237,7 +242,18 @@ bool THISTimeline::loadComposition(ofxXmlSettings compSettings)
 		return false;
 	}
 	
+	if( !(sourceA->getTotalFrames() == sourceB->getTotalFrames() && sourceA->getTotalFrames() == distortion->getTotalFrames())){
+		ofSystemAlertDialog("THISTimeline -- LOAD COMP -- Sequence lengths do not match ");
+		return false;
+	}
+		  
+	minwidthkeys->durationInFrames = sourceB->getTotalFrames();
+	maxwidthkeys->durationInFrames = sourceB->getTotalFrames();
+	sourcekeys->durationInFrames = sourceB->getTotalFrames();
+	blendkeys->durationInFrames = sourceB->getTotalFrames();
+	
 	playheadPosition = settings.getValue("settings:playhead", 0.0);
+	
 	return true;
 }
 
