@@ -342,6 +342,11 @@ void THISKeyframeEditor::mousePressed(ofMouseEventArgs& args)
 		}
 		else if(args.button == 2){
 			easingWindowPosition = screenpoint;
+			float easingWindowHeight = easingTypes[ easingTypes.size()-1]->bounds.y + 
+									   easingTypes[ easingTypes.size()-1]->bounds.height;
+			if(easingWindowPosition.y + easingWindowHeight > ofGetHeight()){
+				easingWindowPosition.y = ofGetHeight() - easingWindowHeight;
+			}
 			drawingEasingWindow = true;
 		}
 	}
